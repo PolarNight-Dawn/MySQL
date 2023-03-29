@@ -141,7 +141,9 @@ select deptno, avg(sal) as sal from emp group by deptno;
 2.平均薪水的等级最低的部门的部门名称
 
 ```sql
-select e2.deptno, s.grade, e1.sal from salgrade s inner join (select deptno, avg(sal) as sal from emp group by deptno) e1 on e1.sal between s.losal and s.hisal inner join emp e2 on e1.deptno = e2.deptno order by sal limit 1;
+select e2.deptno, s.grade, e1.sal from salgrade s inner join (select deptno, avg(sal) as sal from emp group by deptno) e1 on e1.sal between s.losal and s.hisal inner join emp e2 on e1.deptno = e2.deptno order by sal limit 1; //没有考虑出现薪资等级相同的不同平均薪资
+
+select e.deptno, min(e.grade) as grade from (select * from (select e1.deptno, s.grade, e1.sal from (select deptno, avg(sal) as sal from emp group by deptno order by sal) e1 inner join salgrade s on e1.sal between s.losal and s.hisal) e2) e group by e.grade; //出现薪资等级相同的不同平均薪资
 ```
 
 ***key：多表联查***
