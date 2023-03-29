@@ -22,7 +22,7 @@ select e2.ename from emp e2 inner join (select max(sal) as sal from emp group by
 
 having子句中好像只能用条件查询
 
-为毛select ename,max(sal) from emp group by deptno; ename字段显示的不是分组后的记录
+为毛`select ename,max(sal) from emp group by deptno; ename`字段显示的不是分组后的记录
 
 ### 2.高于每个部门的平均薪资的人
 
@@ -31,7 +31,7 @@ having子句中好像只能用条件查询
 1.每个部门的平均薪资
 
 ```sql
-select deptno, avg(sal) from emp group by deptno;
+select deptno, avg(sal) as sal from emp group by deptno;
 ```
 
 2.高于所在部门平均薪资的人
@@ -48,17 +48,85 @@ select e1.ename from emp e1, (select deptno, avg(sal) as sal from emp group by d
 
 这里没法使用自连接，它会将原表每一项与平均薪资表每一项比较，只要大于平均薪资表中的任意一项就会显示，显然不符合题意高于所在部门
 
-我是个joker！可以使用，只要将连接查询的条件查询写在on子句中，并使用运算符
+补：我是个joker！可以使用，只要将连接查询的条件查询写在on子句中，并使用运算符
 
 ### 3.每一个部门平均薪水的等级
 
 #### 思路
 
-4.不使用Max找出工资最高值
+1.每个部门的平均薪资
 
-5.取得平均薪水最高部门的部门编号
+```sql
+select deptno, avg(sal) as sal from emp group by deptno;
+```
 
-6.取得平均薪水最高的部门的部门名称
+2.平均薪水的等级
+
+```sql
+select e.deptno, s.grade from (select deptno, avg(sal) as sal from emp group by deptno) e inner join salgrade s on e.sal between s.losal and s.hisal;
+```
+
+***key：两表联查***
+
+#### 反思
+
+我真是个joker！`select e.deptno s.grade`多字段查询，用逗号隔开
+
+### 4.不使用Max找出工资最高值
+
+#### 思路
+
+按薪资降序排序
+
+```sql
+select * from emp order by sal desc;
+```
+
+#### 反思
+
+无
+
+### 5.取得平均薪水最高部门的部门编号
+
+#### 思路
+
+1.每个部门的平均薪资
+
+```sql
+select deptno, avg(sal) as sal from emp group by deptno;
+```
+
+2.平均薪水最高部门的编号
+
+```sql
+select deptno, avg(sal) as sal from emp group by deptno order by sal desc limit 1;
+```
+
+#### 反思
+
+无
+
+### 6.取得平均薪水最高的部门的部门名称
+
+#### 思考
+
+1.每个部门的平均薪资
+
+```sql
+select deptno, avg(sal) as sal from emp group by deptno;
+```
+
+2.均薪水最高的部门的部门名称
+
+```sql
+select e1.deptno, e2.sal from emp e1 inner join (select deptno, avg(sal) as sal from emp group by deptno order by sal desc limit 1) e2 on e1.deptno = e2.deptno limit 1;
+```
+
+***key：limit***
+
+#### 反思
+
+无
 
 7.求平均薪水的等级最低的部门的部门名称
 
