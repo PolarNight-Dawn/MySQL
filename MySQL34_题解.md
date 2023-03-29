@@ -108,7 +108,7 @@ select deptno, avg(sal) as sal from emp group by deptno order by sal desc limit 
 
 ### 6.取得平均薪水最高的部门的部门名称
 
-#### 思考
+#### 思路
 
 1.每个部门的平均薪资
 
@@ -116,10 +116,10 @@ select deptno, avg(sal) as sal from emp group by deptno order by sal desc limit 
 select deptno, avg(sal) as sal from emp group by deptno;
 ```
 
-2.均薪水最高的部门的部门名称
+2.平均薪水最高的部门的部门名称
 
 ```sql
-select e1.deptno, e2.sal from emp e1 inner join (select deptno, avg(sal) as sal from emp group by deptno order by sal desc limit 1) e2 on e1.deptno = e2.deptno limit 1;
+select e1.deptno, e2.sal from emp e1 inner join (select deptno, avg(sal) as sal from emp group by deptno) e2 on e1.deptno = e2.deptno order by sal desc limit 1;
 ```
 
 ***key：limit***
@@ -128,7 +128,27 @@ select e1.deptno, e2.sal from emp e1 inner join (select deptno, avg(sal) as sal 
 
 无
 
-7.求平均薪水的等级最低的部门的部门名称
+### 7.求平均薪水的等级最低的部门的部门名称
+
+#### 思路
+
+1.每个部门的平均薪资
+
+```sql
+select deptno, avg(sal) as sal from emp group by deptno;
+```
+
+2.平均薪水的等级最低的部门的部门名称
+
+```sql
+select e2.deptno, s.grade, e1.sal from salgrade s inner join (select deptno, avg(sal) as sal from emp group by deptno) e1 on e1.sal between s.losal and s.hisal inner join emp e2 on e1.deptno = e2.deptno order by sal limit 1;
+```
+
+***key：多表联查***
+
+#### 反思
+
+开始以为跟第6题是一样的，仔细读题后才发现需要显示的是两个字段：等级，部门名称（可以把薪资字段也显示出来），这俩个字段涉及了三张表：原表，平均薪资表，薪资等级表，所以采用多表联查，且需要注意的是有可能出现薪资等级相同的不同平均薪资
 
 8.取得比普通员工（员工代码没有在mgr字段上出现的）的最高薪水还要高的领导人姓名
 
