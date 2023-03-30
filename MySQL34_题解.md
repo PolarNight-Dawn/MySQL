@@ -152,17 +152,118 @@ select e.deptno, min(e.grade) as grade from (select * from (select e1.deptno, s.
 
 开始以为跟第6题是一样的，仔细读题后才发现需要显示的是两个字段：等级，部门名称（可以把薪资字段也显示出来），这俩个字段涉及了三张表：原表，平均薪资表，薪资等级表，所以采用多表联查，且需要注意的是有可能出现薪资等级相同的不同平均薪资
 
-8.取得比普通员工（员工代码没有在mgr字段上出现的）的最高薪水还要高的领导人姓名
+### 8.取得比普通员工（员工代码没有在mgr字段上出现的）的最高薪水还要高的领导人姓名
 
-9、取得薪水最高的前五名员工
+#### 思路
 
-10、取得薪水最高的第六到第十名员工
+1.查询出‘领导人’表
 
-11、取得最后入职的 5 名员工
+```sql
+select distinct e2.empno, e2.ename, e2.mgr, e2.sal from emp e1 inner join emp e2 on e1.mgr = e2.empno;
+```
 
-12、取得每个薪水等级有多少员工
+2.查询出‘领导人薪资比下级高’表
 
-13、面试题：
+```sql
+select distinct e3.ename from (select distinct e2.empno, e2.ename, e2.mgr, e2.sal from emp e1 inner join emp e2 on e1.mgr = e2.empno) e3 inner join emp e4 on e3.empno = e4.mgr and e3.sal > e4.sal;
+```
+
+***key：思路***
+
+#### 反思
+
+这道题困扰了我很久，最后发现思路有问题，也有可能是我太菜了实现不了最初的思路。最开始我想的是先查询出‘普通员工’表，然后和‘领导人’表，两表联查。但是对于‘普通员工’表的查询，我抠破脑壳都实现不了，我的想法是先查出‘领导人’表，然后与原表两表联查，使原表显示出没有领导人的普通员工。。。失败
+
+### 9、取得薪水最高的前五名员工
+
+#### 思路
+
+1.按薪水降序排序
+
+```sql
+select e.ename, e.sal from emp e order by e.sal desc;
+```
+
+***key：order语句与limit***
+
+2.取前5
+
+```sql
+select e.ename, e.sal from emp e order by e.sal desc limit 5;
+```
+
+#### 反思
+
+无
+
+### 10、取得薪水最高的第六到第十名员工
+
+#### 思路
+
+1.按薪水降序排序
+
+```sql
+select e.ename, e.sal from emp e order by e.sal desc;
+```
+
+2.取第6到第10
+
+```sql
+select e.ename, e.sal from emp e order by e.sal desc limit 5,5;
+```
+
+***key：order语句与limit***
+
+#### 反思
+
+无
+
+### 11、取得最后入职的 5 名员工
+
+#### 思路
+
+1.按入职时间降序排序
+
+```sql
+select e.ename, e.hiredate from emp e order by e.hiredate desc;
+```
+
+2.取前5
+
+```sql
+select e.ename, e.hiredate from emp e order by e.hiredate desc limit 5;
+```
+
+***key：order语句与limit***
+
+#### 反思
+
+无
+
+### 12、取得每个薪水等级有多少员工
+
+#### 思路
+
+1.查询出‘员工薪水等级’表
+
+```sql
+select e.ename, s.grade from emp e, salgrade s where e.sal between s.losal and s.hisal;
+```
+
+2.统计每个薪水等级的员工数量
+
+```sql
+select count(e1.grade) as grade_count from (select e.ename, s.grade from emp e, salgrade s where e.sal between s.losal and s.hisal) e1 group by e1.grade order by e1.grade;
+```
+
+***key：count函数***
+
+#### 反思
+
+能不能添加一个grade字段
+
+### 13、面试题：
+
 有 3 个表 S(学生表)，C（课程表），SC（学生选课表）
 S（SNO，SNAME）代表（学号，姓名）
 C（CNO，CNAME，CTEACHER）代表（课号，课名，教师）
@@ -171,6 +272,18 @@ SC（SNO，CNO，SCGRADE）代表（学号，课号，成绩）
 1，找出没选过“黎明”老师的所有学生姓名。
 2，列出 2 门以上（含2 门）不及格学生姓名及平均成绩。
 3，即学过 1 号课程又学过 2 号课所有学生的姓名。
+
+#### 思路
+
+```sql
+select s.sname from (select sc.sno from (select c.cno from c where c.cteacher = '黎明') c1 where sc.cno = c1.cno) sc1 where sc1.sno = s.sno;
+```
+
+***key：多表联查与子语句***
+
+```
+select
+```
 
 14、列出所有员工及领导的姓名
 
