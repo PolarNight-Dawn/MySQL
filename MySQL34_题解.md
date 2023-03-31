@@ -275,17 +275,71 @@ SC（SNO，CNO，SCGRADE）代表（学号，课号，成绩）
 
 #### 思路
 
+1，找出没选过“黎明”老师的所有学生姓名
+
 ```sql
 select s.sname from (select sc.sno from (select c.cno from c where c.cteacher = '黎明') c1 where sc.cno = c1.cno) sc1 where sc1.sno = s.sno;
 ```
 
 ***key：多表联查与子语句***
 
-```
-select
+2，列出 2 门以上（含2 门）不及格学生姓名及平均成绩
+
+```sql
+select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2; //显示出2门及以上不及格学生的学号
 ```
 
-14、列出所有员工及领导的姓名
+```sql
+select s.sno, s.sname from s inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) b on s.sno = b.sno;  //显示出2门及以上不及格学生的姓名及学号
+```
+
+```sql
+select sc.sno, avg(scgrade) as avg from sc group by sc.sno; //显示出所有学生的平均成绩及学号
+```
+
+```sql
+select d.sno, d.avg from (select sc.sno, avg(scgrade) as avg from sc group by sc.sno) d inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) c on c.sno = d.sno; //显示出2门及以上不及格学生的平均成绩及学号
+```
+
+```sql
+select e1.sname, e2.avg from (select s.sno, s.sname from s inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) b on s.sno = b.sno) e1, (select d.sno, d.avg from (select sc.sno, avg(scgrade) as avg from sc group by sc.sno) d inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) c on c.sno = d.sno) e2 where e1.sno = e2.sno; //列出2门及以上不及格学生姓名及平均成绩
+```
+
+***key：from中的子查询结果可以看成一张临时表***
+
+3，既学过 1 号课程又学过 2 号课所有学生的姓名
+
+```sql
+select sc.sno from sc where sc.cno = '1'; //学过1号课程的学生学号
+```
+
+```sql
+select sc.sno from sc where sc.cno = '2'; //学过2号课程的学生学号
+```
+
+```sql
+select sc1.sno from (select sc.sno from sc where sc.cno = '1') sc1, (select sc.sno from sc where sc.cno = '2') sc2 where sc1.sno = sc2.sno; //既学过1号课程又学过2号课所有学生的学号
+```
+
+```sql
+select s.sname from s, (select sc1.sno from (select sc.sno from sc where sc.cno = '1') sc1, (select sc.sno from sc where sc.cno = '2') sc2 where sc1.sno = sc2.sno) sc3 where s.sno = sc3.sno; //既学过1号课程又学过2号课所有学生的姓名
+
+select s.sname from s inner join (select sc1.sno from (select sc.sno from sc where sc.cno = '1') sc1, (select sc.sno from sc where sc.cno = '2') sc2 where sc1.sno = sc2.sno) sc3 on s.sno = sc3.sno; //上面的sql语句使用from多表查询，此sql语句是用join多表查询，上网查询了一下好像两者没有什么区别，效率是一样的
+```
+
+#### 反思
+
+having语句中使用分组函数是不能使用需要分组的字段的别名的，必须是该字段使用了分组函数后形成的名字
+
+from多表查询与join多表查询有什么区别
+
+### 14、列出所有员工及领导的姓名
+
+#### 思路
+
+```sql
+select e1.ename as staff, e2.ename as manger from emp e1, emp e2 where e1.mgr = e2.empno;
+```
 
 15、列出受雇日期早于其直接上级的所有员工的编号,姓名,部门名称
 
