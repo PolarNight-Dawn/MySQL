@@ -453,17 +453,169 @@ select e1.ename, e1.dname, e2.num from (select e1.ename, d.dname, d.deptno from 
 
 ### 20、列出最低薪金大于 1500 的各种工作及从事此工作的全部雇员人数
 
-21、列出在部门"SALES"< 销售部> 工作的员工的姓名, 假定不知道销售部的部门编号
+#### 思路
 
-22、列出薪金高于公司平均薪金的所有员工, 所在部门, 上级领导, 雇员的工资等级
+```sql
+select e.job, min(e.sal) as min_sal, count(e.job) as num from emp e group by e.job having min_sal > 1500;
+```
 
-23、 列出与"SCOTT" 从事相同工作的所有员工及部门名称
+***key：分组函数可以组合使用***
 
-24、列出薪金等于部门 30 中员工的薪金的其他员工的姓名和薪金
+#### 反思
 
-25、列出薪金高于在部门 30 工作的所有员工的薪金的员工姓名和薪金、部门名称
+无
 
-26、列出在每个部门工作的员工数量, 平均工资和平均服务期限
+### 21、列出在部门"SALES"< 销售部> 工作的员工的姓名, 假定不知道销售部的部门编号
+
+#### 思路
+
+1.找到销售部的部门编号
+
+```sql
+select d.deptno from dept d where d.dname = 'sales';
+```
+
+2.列出在部门"SALES"< 销售部> 工作的员工的姓名
+
+```sql
+select e.ename from emp e, (select d.deptno from dept d where d.dname = 'sales') d where d.deptno = e.deptno;
+```
+
+#### 反思
+
+无
+
+### 22、列出薪金高于公司平均薪金的所有员工, 所在部门, 上级领导, 雇员的工资等级
+
+#### 思路
+
+1.列出公司平均薪金
+
+```sql
+select avg(e.sal) as avg_sal from emp e;
+```
+
+2.列出薪金高于公司平均薪金的所有员工, 所在部门, 上级领导
+
+```sql
+select e.ename, e.deptno, e.mgr from emp e, (select avg(e.sal) as avg_sal from emp e) e1 where e.sal > e1.avg_sal;
+```
+
+3.列出薪金高于公司平均薪金的所有员工, 所在部门, 上级领导, 雇员的工资等级
+
+```sql
+select e.ename, e.deptno, e.mgr, e.sal, (select s.grade from salgrade s where e.sal between s.losal and s.hisal) as grade from emp e, (select avg(e.sal) as avg_sal from emp e) e1 where e.sal > e1.avg_sal;
+```
+
+***key：select子句中的子查询***
+
+#### 反思
+
+无
+
+### 23、 列出与"SCOTT" 从事相同工作的所有员工及部门名称
+
+#### 思路
+
+1.找到"SCOTT" 从事的工作
+
+```sql
+select e.job from emp e where e.ename = 'scott';
+```
+
+2.列出与"SCOTT" 从事相同工作的所有员工
+
+```sql
+select e.ename from emp e where e.job = (select e.job from emp e where e.ename = 'scott') and e.ename <> 'scott';
+```
+
+3.列出与"SCOTT" 从事相同工作的所有员工及部门名称
+
+```sql
+select e.ename, (select d.dname from (select e1.deptno from emp e1 where e.ename = e1.ename) e2, dept d where e2.deptno = d.deptno) as dname from emp e where e.job = (select e.job from emp e where e.ename = 'scott') and e.ename <> 'scott';
+```
+
+***key：select与where子句中的子查询***
+
+#### 反思
+
+对于select子句中的子查询，需注意select子句中的字段名字不得与子查询的字段名字重合，select子句中的字段可直接运用在子查询中
+
+### 24、列出薪金等于部门 30 中员工的薪金的其他员工的姓名和薪金
+
+#### 思路
+
+1.找出部门30 中员工的薪金
+
+```sql
+select e.sal from emp e where e.deptno = 30;
+```
+
+2.列出薪金等于部门 30 中员工的薪金的其他员工的姓名和薪金
+
+```sql
+select e.ename, e.sal from emp e, (select e.ename, e.sal from emp e where e.deptno = 30) e1 where e.sal = e1.sal and e.ename <> e1.ename;
+```
+
+#### 反思
+
+无
+
+### 25、列出薪金高于在部门 30 工作的所有员工的薪金的员工姓名和薪金、部门名称
+
+#### 思路
+
+1.找出在部门 30 工作的员工的最高薪金
+
+```sql
+select max(e.sal) as max_sal from emp e where e.deptno = 30;
+```
+
+2.列出薪金高于在部门 30 工作的所有员工的薪金的员工姓名和薪金
+
+```sql
+select e.ename, e.sal from emp e where e.sal > (select max(e.sal) as max_sal from emp e where e.deptno = 30);
+```
+
+3.列出薪金高于在部门 30 工作的所有员工的薪金的员工姓名和薪金、部门名称
+
+```
+select e.ename, e.sal, (select d.dname from dept d where e.deptno = d.deptno) as dname from emp e where e.sal > (select max(e.sal) as max_sal from emp e where e.deptno = 30);
+```
+
+***key：select与where子句中的子查询***
+
+#### 反思
+
+对于select子句中的子查询，不仅select子句中的字段可直接运用在子查询中，select子句查询的表中的任意字段都行
+
+### 26、列出在每个部门工作的员工数量, 平均工资和平均服务期限
+
+#### 思路
+
+1.列出在每个部门工作的员工数量
+
+```sql
+select count(e.deptno) as num from emp e group by e.deptno;
+```
+
+2.列出在每个部门工作的员工数量, 平均工资
+
+```sql
+select count(e.deptno) as num, avg(e.sal) as avg_sal from emp e group by e.deptno;
+```
+
+3.列出在每个部门工作的员工数量, 平均工资和平均服务期限
+
+```sql
+select count(e.deptno) as num, avg(e.sal) as avg_sal, floor(avg(unix_timestamp(curdate()) - unix_timestamp(e.hiredate)) / 31536000) as avg_worktime from emp e group by e.deptno;
+```
+
+***key：分组函数可以组合使用***
+
+#### 反思
+
+平均服务期限真的是把我难住了，上网查询了一下，主要是不了解关于日期的几个函数：from_unixtime（）时间戳转换函数——将整数转换成日期格式，unix_timestamp（）时间戳转换函数——将日期格式转换成整数，curdate（），floor（）——返回小于或等于数字的最大整数值，以及avg(date1-date2)的使用方法
 
 27、 列出所有员工的姓名、部门名称和工资
 
