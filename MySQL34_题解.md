@@ -341,17 +341,117 @@ from多表查询与join多表查询有什么区别
 select e1.ename as staff, e2.ename as manger from emp e1, emp e2 where e1.mgr = e2.empno;
 ```
 
-15、列出受雇日期早于其直接上级的所有员工的编号,姓名,部门名称
+#### 反思
 
-16、 列出部门名称和这些部门的员工信息, 同时列出那些没有员工的部门
+无
 
-17、列出至少有 5 个员工的所有部门
+### 15、列出受雇日期早于其直接上级的所有员工的编号,姓名,部门名称
 
-18、列出薪金比"SMITH" 多的所有员工信息
+#### 思路
 
-19、 列出所有"CLERK"( 办事员) 的姓名及其部门名称, 部门的人数
+1.找出没有重复的领导人表
 
-20、列出最低薪金大于 1500 的各种工作及从事此工作的全部雇员人数
+```sql
+select distinct e.mgr from emp e;
+```
+
+2.找出没有重复的领导人入职日期表
+
+```sql
+select e.empno, e.hiredate from emp e inner join (select distinct e.mgr from emp e) e1 on e.empno = e1.mgr;
+```
+
+3.找出早于直接上级的领导人入职的员工表（妥妥的社畜表:cry:)
+
+```sql
+select e3.empno, e3.ename, e3.deptno from emp e3 inner join (select e.empno, e.hiredate from emp e inner join (select distinct e.mgr from emp e) e1 on e.empno = e1.mgr) e2 on e2.empno = e3.mgr and e2.hiredate > e3.hiredate;
+```
+
+***key：消重***
+
+#### 反思
+
+在解析的过程中，我一直困扰能不能跳过第一步，直接第二步--就是用一个sql语句找出没有重复的领导人入职日期表，但是消重只能一个字段，或者多个字段联合起来，对于一个字段消重同时另一个字段不做处理的情况无能为力
+
+### 16、 列出部门名称和这些部门的员工信息, 同时列出那些没有员工的部门
+
+#### 思路
+
+```sql
+select d.dname, e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno from dept d left join emp e on d.deptno = e.deptno;
+```
+
+***key：外连接***
+
+#### 反思
+
+无
+
+### 17、列出至少有 5 个员工的所有部门
+
+#### 思路
+
+1.找出至少有五个员工的部门
+
+```sql
+select count(e.deptno) as num from emp e group by e.deptno having count(e.deptno) >= 5;
+```
+
+2.显示出部门
+
+```sql
+select d.dname from dept d, (select e.deptno, count(e.deptno) as num from emp e group by e.deptno having count(e.deptno) >= 5) e where e.deptno = d.deptno;
+```
+
+***key：分组***
+
+#### 反思
+
+### 18、列出薪金比"SMITH" 多的所有员工信息
+
+#### 思路
+
+```sql
+select e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno from emp e inner join (select e.sal from emp e where e.ename = 'smith') e1 on e.sal > e1.sal;
+```
+
+#### 反思
+
+无
+
+### 19、 列出所有"CLERK"( 办事员) 的姓名及其部门名称, 部门的人数
+
+#### 思路
+
+1.列出所有"CLERK"( 办事员) 的姓名
+
+```sql
+select e.ename from emp e where e.job = 'clerk';
+```
+
+2.列出所有"CLERK"( 办事员) 的姓名及其部门名称
+
+```sql
+select e1.ename, d.dname from dept d inner join (select e.ename, e.deptno from emp e where e.job = 'clerk') e1 on e1.deptno = d.deptno;
+```
+
+3.部门的人数
+
+```sql
+select e.deptno, count(e.deptno) as num from emp e group by e.deptno;
+```
+
+4.列出所有"CLERK"( 办事员) 的姓名及其部门名称, 部门的人数
+
+```sql
+select e1.ename, e1.dname, e2.num from (select e1.ename, d.dname, d.deptno from dept d inner join (select e.ename, e.deptno from emp e where e.job = 'clerk') e1 on e1.deptno = d.deptno) e1, (select e.deptno, count(e.deptno) as num from emp e group by e.deptno) e2 where e1.deptno = e2.deptno;
+```
+
+#### 反思
+
+无
+
+### 20、列出最低薪金大于 1500 的各种工作及从事此工作的全部雇员人数
 
 21、列出在部门"SALES"< 销售部> 工作的员工的姓名, 假定不知道销售部的部门编号
 
