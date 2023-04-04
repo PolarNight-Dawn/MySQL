@@ -13,7 +13,20 @@ select deptno as sal from emp group by deptno;
 2.找出最高薪资人员，显示其名称
 
 ```sql
-select e2.ename from emp e2 inner join (select max(sal) as sal from emp group by deptno) e1 on e1.sal = e2.sal;
+select 
+    e2.ename 
+from 
+    emp e2 
+inner join 
+    (select 
+         max(sal) as sal 
+     from 
+         emp 
+     group by 
+     deptno
+    ) e1 
+on 
+    e1.sal = e2.sal;
 ```
 
 ***key：把一张表看成两张表***
@@ -37,9 +50,33 @@ select deptno, avg(sal) as sal from emp group by deptno;
 2.高于所在部门平均薪资的人
 
 ```sql
-select e1.ename from emp e1 inner join (select deptno,avg(sal) as sal from emp group by deptno) e2 on e1.deptno = e2.deptno and e1.sal > e2.sal; //连接查询
+select 
+    e1.ename 
+from 
+    emp e1
+inner join 
+    (select 
+         deptno,avg(sal) as sal 
+     from 
+         emp 
+     group by 
+         deptno
+    ) e2 
+on 
+    e1.deptno = e2.deptno and e1.sal > e2.sal; //连接查询
 
-select e1.ename from emp e1, (select deptno, avg(sal) as sal from emp group by deptno) e2 where e1.deptno = e2.deptno and e1.sal > e2.sal; //子查询
+select 
+    e1.ename 
+from 
+    emp e1, (select
+                 deptno, avg(sal) as sal 
+             from 
+                 emp 
+             group by 
+                 deptno
+            ) e2 
+where 
+    e1.deptno = e2.deptno and e1.sal > e2.sal; //子查询
 ```
 
 ***key：把一张表看成两张表***
@@ -63,7 +100,20 @@ select deptno, avg(sal) as sal from emp group by deptno;
 2.平均薪水的等级
 
 ```sql
-select e.deptno, s.grade from (select deptno, avg(sal) as sal from emp group by deptno) e inner join salgrade s on e.sal between s.losal and s.hisal;
+select 
+    e.deptno, s.grade 
+from 
+    (select 
+         deptno, avg(sal) as sal 
+     from 
+         emp 
+     group by 
+         deptno
+    ) e 
+inner join 
+    salgrade s 
+on 
+    e.sal between s.losal and s.hisal;
 ```
 
 ***key：两表联查***
@@ -99,7 +149,15 @@ select deptno, avg(sal) as sal from emp group by deptno;
 2.平均薪水最高部门的编号
 
 ```sql
-select deptno, avg(sal) as sal from emp group by deptno order by sal desc limit 1;
+select 
+    deptno, avg(sal) as sal 
+from  
+    emp 
+group by 
+    deptno 
+order by  
+    sal desc 
+limit 1;
 ```
 
 #### 反思
@@ -119,7 +177,23 @@ select deptno, avg(sal) as sal from emp group by deptno;
 2.平均薪水最高的部门的部门名称
 
 ```sql
-select e1.deptno, e2.sal from emp e1 inner join (select deptno, avg(sal) as sal from emp group by deptno) e2 on e1.deptno = e2.deptno order by sal desc limit 1;
+select  
+    e1.deptno, e2.sal 
+from 
+    emp e1 
+inner join  
+    (select 
+         deptno, avg(sal) as sal 
+     from 
+         emp 
+     group by 
+         deptno
+    ) e2 
+on 
+    e1.deptno = e2.deptno 
+order by 
+    sal desc 
+limit 1;
 ```
 
 ***key：limit***
@@ -141,9 +215,53 @@ select deptno, avg(sal) as sal from emp group by deptno;
 2.平均薪水的等级最低的部门的部门名称
 
 ```sql
-select e2.deptno, s.grade, e1.sal from salgrade s inner join (select deptno, avg(sal) as sal from emp group by deptno) e1 on e1.sal between s.losal and s.hisal inner join emp e2 on e1.deptno = e2.deptno order by sal limit 1; //没有考虑出现薪资等级相同的不同平均薪资
+select 
+    e2.deptno, s.grade, e1.sal 
+from 
+    salgrade s 
+inner join 
+    (select 
+         deptno, avg(sal) as sal 
+     from 
+         emp 
+     group by 
+         deptno
+    ) e1 
+on 
+    e1.sal between s.losal and s.hisal 
+inner join 
+    emp e2 
+on 
+    e1.deptno = e2.deptno 
+order by 
+    sal 
+limit 1; //没有考虑出现薪资等级相同的不同平均薪资
 
-select e.deptno, min(e.grade) as grade from (select * from (select e1.deptno, s.grade, e1.sal from (select deptno, avg(sal) as sal from emp group by deptno order by sal) e1 inner join salgrade s on e1.sal between s.losal and s.hisal) e2) e group by e.grade; //出现薪资等级相同的不同平均薪资
+select 
+    e.deptno, min(e.grade) as grade 
+from 
+    (select 
+         * 
+     from 
+         (select 
+              e1.deptno, s.grade, e1.sal 
+          from (select 
+                    deptno, avg(sal) as sal 
+                from 
+                    emp 
+                group by 
+                    deptno 
+                order by 
+                sal
+               ) e1 
+          inner join 
+              salgrade s 
+          on 
+              e1.sal between s.losal and s.hisal
+         ) e2
+    ) e 
+group by 
+    e.grade; //出现薪资等级相同的不同平均薪资
 ```
 
 ***key：多表联查***
@@ -159,13 +277,35 @@ select e.deptno, min(e.grade) as grade from (select * from (select e1.deptno, s.
 1.查询出‘领导人’表
 
 ```sql
-select distinct e2.empno, e2.ename, e2.mgr, e2.sal from emp e1 inner join emp e2 on e1.mgr = e2.empno;
+select 
+    distinct e2.empno, e2.ename, e2.mgr, e2.sal 
+from 
+    emp e1 
+inner join 
+    emp e2 
+on 
+    e1.mgr = e2.empno;
 ```
 
 2.查询出‘领导人薪资比下级高’表
 
 ```sql
-select distinct e3.ename from (select distinct e2.empno, e2.ename, e2.mgr, e2.sal from emp e1 inner join emp e2 on e1.mgr = e2.empno) e3 inner join emp e4 on e3.empno = e4.mgr and e3.sal > e4.sal;
+select 
+    distinct e3.ename 
+from 
+    (select 
+         distinct e2.empno, e2.ename, e2.mgr, e2.sal 
+     from 
+         emp e1 
+     inner join 
+         emp e2 
+     on 
+         e1.mgr = e2.empno
+    ) e3 
+inner join 
+    emp e4 
+on 
+    e3.empno = e4.mgr and e3.sal > e4.sal;
 ```
 
 ***key：思路***
@@ -253,7 +393,19 @@ select e.ename, s.grade from emp e, salgrade s where e.sal between s.losal and s
 2.统计每个薪水等级的员工数量
 
 ```sql
-select count(e1.grade) as grade_count from (select e.ename, s.grade from emp e, salgrade s where e.sal between s.losal and s.hisal) e1 group by e1.grade order by e1.grade;
+select 
+    count(e1.grade) as grade_count 
+from (select 
+          e.ename, s.grade 
+      from 
+          emp e, salgrade s 
+      where 
+          e.sal between s.losal and s.hisal
+     ) e1 
+group by 
+    e1.grade 
+order by 
+    e1.grade;
 ```
 
 ***key：count函数***
@@ -278,7 +430,24 @@ SC（SNO，CNO，SCGRADE）代表（学号，课号，成绩）
 1，找出没选过“黎明”老师的所有学生姓名
 
 ```sql
-select s.sname from (select sc.sno from (select c.cno from c where c.cteacher = '黎明') c1 where sc.cno = c1.cno) sc1 where sc1.sno = s.sno;
+select 
+    s.sname 
+from 
+    (select 
+         sc.sno 
+     from 
+         (select 
+              c.cno 
+          from 
+              c 
+          where 
+              c.cteacher = '黎明'
+         ) c1 
+     where 
+         sc.cno = c1.cno
+    ) sc1 
+where 
+    sc1.sno = s.sno;
 ```
 
 ***key：多表联查与子语句***
@@ -286,11 +455,44 @@ select s.sname from (select sc.sno from (select c.cno from c where c.cteacher = 
 2，列出 2 门以上（含2 门）不及格学生姓名及平均成绩
 
 ```sql
-select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2; //显示出2门及以上不及格学生的学号
+select 
+    a.sno, count(a.scgrade) as count 
+from 
+    (select 
+         sc.sno, sc.scgrade 
+     from 
+         sc 
+     where 
+         sc.scgrade < 60
+    ) a 
+group by 
+    a.sno 
+having 
+    count(a.scgrade) >= 2; //显示出2门及以上不及格学生的学号
 ```
 
 ```sql
-select s.sno, s.sname from s inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) b on s.sno = b.sno;  //显示出2门及以上不及格学生的姓名及学号
+select 
+    s.sno, s.sname 
+from 
+    s 
+inner join 
+    (select 
+         a.sno, count(a.scgrade) as count 
+     from 
+         (select 
+              sc.sno, sc.scgrade 
+          from 
+              sc 
+          where 
+              sc.scgrade < 60
+     ) a 
+group by 
+    a.sno 
+having 
+    count(a.scgrade) >= 2) b 
+on 
+    s.sno = b.sno;  //显示出2门及以上不及格学生的姓名及学号
 ```
 
 ```sql
@@ -298,11 +500,93 @@ select sc.sno, avg(scgrade) as avg from sc group by sc.sno; //显示出所有学
 ```
 
 ```sql
-select d.sno, d.avg from (select sc.sno, avg(scgrade) as avg from sc group by sc.sno) d inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) c on c.sno = d.sno; //显示出2门及以上不及格学生的平均成绩及学号
+select 
+    d.sno, d.avg 
+from 
+    (select 
+         sc.sno, avg(scgrade) as avg 
+     from 
+         sc 
+     group by 
+         sc.sno) d 
+inner join 
+    (select 
+         a.sno, count(a.scgrade) as count 
+     from 
+         (select 
+              sc.sno, sc.scgrade 
+          from 
+              sc 
+          where 
+              sc.scgrade < 60
+         ) a 
+     group by 
+         a.sno
+     having 
+         count(a.scgrade) >= 2
+    ) c 
+on 
+    c.sno = d.sno; //显示出2门及以上不及格学生的平均成绩及学号
 ```
 
 ```sql
-select e1.sname, e2.avg from (select s.sno, s.sname from s inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) b on s.sno = b.sno) e1, (select d.sno, d.avg from (select sc.sno, avg(scgrade) as avg from sc group by sc.sno) d inner join (select a.sno, count(a.scgrade) as count from (select sc.sno, sc.scgrade from sc where sc.scgrade < 60) a group by a.sno having count(a.scgrade) >= 2) c on c.sno = d.sno) e2 where e1.sno = e2.sno; //列出2门及以上不及格学生姓名及平均成绩
+select 
+    e1.sname, e2.avg 
+from 
+    (select 
+         s.sno, s.sname 
+     from 
+         s 
+     inner join 
+         (select 
+              a.sno, count(a.scgrade) as count 
+          from 
+              (select 
+                   sc.sno, sc.scgrade 
+               from 
+                   sc 
+               where 
+                   sc.scgrade < 60
+              ) a 
+          group by 
+              a.sno 
+          having 
+              count(a.scgrade) >= 2
+         ) b 
+     on 
+         s.sno = b.sno
+    )e1, 
+    (select 
+        d.sno, d.avg 
+    from 
+        (select 
+             sc.sno, avg(scgrade) as avg 
+         from 
+             sc 
+         group by 
+             sc.sno
+        ) d 
+    inner join 
+        (select 
+             a.sno, count(a.scgrade) as count 
+         from 
+             (select 
+                  sc.sno, sc.scgrade 
+              from 
+                  sc 
+              where 
+                  sc.scgrade < 60
+             ) a 
+         group by 
+             a.sno 
+         having 
+             count(a.scgrade) >= 2
+        ) c 
+    on 
+        c.sno = d.sno
+    ) e2 
+where
+    e1.sno = e2.sno; //列出2门及以上不及格学生姓名及平均成绩
 ```
 
 ***key：from中的子查询结果可以看成一张临时表***
@@ -318,13 +602,82 @@ select sc.sno from sc where sc.cno = '2'; //学过2号课程的学生学号
 ```
 
 ```sql
-select sc1.sno from (select sc.sno from sc where sc.cno = '1') sc1, (select sc.sno from sc where sc.cno = '2') sc2 where sc1.sno = sc2.sno; //既学过1号课程又学过2号课所有学生的学号
+select 
+    sc1.sno 
+from 
+    (select 
+         sc.sno 
+     from 
+         sc 
+     where 
+         sc.cno = '1'
+    ) sc1, 
+    (select 
+         sc.sno 
+     from 
+         sc 
+     where 
+         sc.cno = '2'
+    ) sc2 
+where 
+    sc1.sno = sc2.sno; //既学过1号课程又学过2号课所有学生的学号
 ```
 
 ```sql
-select s.sname from s, (select sc1.sno from (select sc.sno from sc where sc.cno = '1') sc1, (select sc.sno from sc where sc.cno = '2') sc2 where sc1.sno = sc2.sno) sc3 where s.sno = sc3.sno; //既学过1号课程又学过2号课所有学生的姓名
+select 
+    s.sname 
+from 
+    s, 
+    (select 
+         sc1.sno 
+     from 
+         (select 
+              sc.sno 
+          from 
+              sc 
+          where 
+             sc.cno = '1'
+         ) sc1, 
+         (select 
+              sc.sno 
+          from 
+              sc 
+          where 
+              sc.cno = '2'
+         ) sc2 
+     where 
+         sc1.sno = sc2.sno
+    ) sc3 
+where 
+    s.sno = sc3.sno; //既学过1号课程又学过2号课所有学生的姓名
 
-select s.sname from s inner join (select sc1.sno from (select sc.sno from sc where sc.cno = '1') sc1, (select sc.sno from sc where sc.cno = '2') sc2 where sc1.sno = sc2.sno) sc3 on s.sno = sc3.sno; //上面的sql语句使用from多表查询，此sql语句是用join多表查询，上网查询了一下好像两者没有什么区别，效率是一样的
+select 
+   s.sname 
+from 
+    s 
+inner join 
+    (select 
+         sc1.sno 
+     from 
+         (select 
+              sc.sno 
+          from 
+              sc 
+          where 
+              sc.cno = '1'
+         ) sc1, 
+         (select 
+              sc.sno 
+          from 
+              sc 
+          where 
+              sc.cno = '2'
+         ) sc2
+     where 
+         sc1.sno = sc2.sno
+    ) sc3 
+on 
+    s.sno = sc3.sno; //上面的sql语句使用from多表查询，此sql语句是用join多表查询，上网查询了一下好像两者没有什么区别，效率是一样的
 ```
 
 #### 反思
@@ -358,13 +711,41 @@ select distinct e.mgr from emp e;
 2.找出没有重复的领导人入职日期表
 
 ```sql
-select e.empno, e.hiredate from emp e inner join (select distinct e.mgr from emp e) e1 on e.empno = e1.mgr;
+select 
+    e.empno, e.hiredate 
+from 
+    emp e 
+inner join 
+    (select 
+         distinct e.mgr 
+     from 
+         emp e
+    ) e1 
+on e.empno = e1.mgr;
 ```
 
 3.找出早于直接上级的领导人入职的员工表（妥妥的社畜表:cry:)
 
 ```sql
-select e3.empno, e3.ename, e3.deptno from emp e3 inner join (select e.empno, e.hiredate from emp e inner join (select distinct e.mgr from emp e) e1 on e.empno = e1.mgr) e2 on e2.empno = e3.mgr and e2.hiredate > e3.hiredate;
+select 
+    e3.empno, e3.ename, e3.deptno 
+from 
+    emp e3 
+inner join 
+    (select 
+         e.empno, e.hiredate 
+     from 
+         emp e 
+     inner join 
+         (select 
+              distinct e.mgr 
+          from 
+              emp e
+         ) e1 
+         on e.empno = e1.mgr
+    ) e2 
+on 
+    e2.empno = e3.mgr and e2.hiredate > e3.hiredate;
 ```
 
 ***key：消重***
@@ -378,7 +759,14 @@ select e3.empno, e3.ename, e3.deptno from emp e3 inner join (select e.empno, e.h
 #### 思路
 
 ```sql
-select d.dname, e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno from dept d left join emp e on d.deptno = e.deptno;
+select 
+    d.dname, e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno 
+from 
+    dept d 
+left join 
+    emp e 
+on 
+    d.deptno = e.deptno;
 ```
 
 ***key：外连接***
@@ -394,13 +782,33 @@ select d.dname, e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.dep
 1.找出至少有五个员工的部门
 
 ```sql
-select count(e.deptno) as num from emp e group by e.deptno having count(e.deptno) >= 5;
+select 
+    count(e.deptno) as num 
+from 
+    emp e 
+group by 
+    e.deptno 
+having
+    count(e.deptno) >= 5;
 ```
 
 2.显示出部门
 
 ```sql
-select d.dname from dept d, (select e.deptno, count(e.deptno) as num from emp e group by e.deptno having count(e.deptno) >= 5) e where e.deptno = d.deptno;
+select 
+    d.dname 
+from 
+    dept d, 
+    (select 
+        e.deptno, count(e.deptno) as num 
+    from 
+        emp e 
+    group by 
+        e.deptno 
+    having 
+        count(e.deptno) >= 5) e 
+    where 
+        e.deptno = d.deptno;
 ```
 
 ***key：分组***
@@ -412,7 +820,19 @@ select d.dname from dept d, (select e.deptno, count(e.deptno) as num from emp e 
 #### 思路
 
 ```sql
-select e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno from emp e inner join (select e.sal from emp e where e.ename = 'smith') e1 on e.sal > e1.sal;
+select 
+    e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno 
+from 
+    emp e 
+inner join 
+    (select 
+         e.sal 
+     from 
+         emp e 
+     where 
+         e.ename = 'smith'
+    ) e1 
+on e.sal > e1.sal;
 ```
 
 #### 反思
@@ -432,7 +852,20 @@ select e.ename from emp e where e.job = 'clerk';
 2.列出所有"CLERK"( 办事员) 的姓名及其部门名称
 
 ```sql
-select e1.ename, d.dname from dept d inner join (select e.ename, e.deptno from emp e where e.job = 'clerk') e1 on e1.deptno = d.deptno;
+select 
+    e1.ename, d.dname 
+from 
+    dept d 
+inner join 
+    (select 
+         e.ename, e.deptno 
+     from 
+         emp e 
+     where 
+         e.job = 'clerk'
+    ) e1 
+on 
+    e1.deptno = d.deptno;
 ```
 
 3.部门的人数
@@ -444,7 +877,33 @@ select e.deptno, count(e.deptno) as num from emp e group by e.deptno;
 4.列出所有"CLERK"( 办事员) 的姓名及其部门名称, 部门的人数
 
 ```sql
-select e1.ename, e1.dname, e2.num from (select e1.ename, d.dname, d.deptno from dept d inner join (select e.ename, e.deptno from emp e where e.job = 'clerk') e1 on e1.deptno = d.deptno) e1, (select e.deptno, count(e.deptno) as num from emp e group by e.deptno) e2 where e1.deptno = e2.deptno;
+select 
+    e1.ename, e1.dname, e2.num 
+from 
+    (select 
+         e1.ename, d.dname, d.deptno 
+     from 
+         dept d 
+     inner join 
+         (select 
+              e.ename, e.deptno 
+          from 
+              emp e 
+          where 
+              e.job = 'clerk'
+         ) e1 
+     on 
+         e1.deptno = d.deptno
+    ) e1, 
+    (select 
+         e.deptno, count(e.deptno) as num 
+     from 
+         emp e 
+     group by 
+         e.deptno
+    ) e2 
+where 
+    e1.deptno = e2.deptno;
 ```
 
 #### 反思
@@ -478,7 +937,19 @@ select d.deptno from dept d where d.dname = 'sales';
 2.列出在部门"SALES"< 销售部> 工作的员工的姓名
 
 ```sql
-select e.ename from emp e, (select d.deptno from dept d where d.dname = 'sales') d where d.deptno = e.deptno;
+select 
+    e.ename 
+from 
+    emp e, 
+    (select 
+         d.deptno 
+     from 
+         dept d 
+     where 
+         d.dname = 'sales'
+    ) d 
+where 
+    d.deptno = e.deptno;
 ```
 
 #### 反思
@@ -498,13 +969,40 @@ select avg(e.sal) as avg_sal from emp e;
 2.列出薪金高于公司平均薪金的所有员工, 所在部门, 上级领导
 
 ```sql
-select e.ename, e.deptno, e.mgr from emp e, (select avg(e.sal) as avg_sal from emp e) e1 where e.sal > e1.avg_sal;
+select 
+    e.ename, e.deptno, e.mgr 
+from 
+    emp e, 
+    (select 
+         avg(e.sal) as avg_sal 
+     from 
+         emp e
+    ) e1 
+where 
+    e.sal > e1.avg_sal;
 ```
 
 3.列出薪金高于公司平均薪金的所有员工, 所在部门, 上级领导, 雇员的工资等级
 
 ```sql
-select e.ename, e.deptno, e.mgr, e.sal, (select s.grade from salgrade s where e.sal between s.losal and s.hisal) as grade from emp e, (select avg(e.sal) as avg_sal from emp e) e1 where e.sal > e1.avg_sal;
+select 
+    e.ename, e.deptno, e.mgr, e.sal, 
+    (select 
+        s.grade 
+    from 
+        salgrade s 
+    where 
+        e.sal between s.losal and s.hisal
+    ) as grade 
+from 
+    emp e, 
+    (select 
+         avg(e.sal) as avg_sal 
+     from 
+         emp e
+    ) e1 
+where 
+    e.sal > e1.avg_sal;
 ```
 
 ***key：select子句中的子查询***
@@ -526,13 +1024,50 @@ select e.job from emp e where e.ename = 'scott';
 2.列出与"SCOTT" 从事相同工作的所有员工
 
 ```sql
-select e.ename from emp e where e.job = (select e.job from emp e where e.ename = 'scott') and e.ename <> 'scott';
+select 
+    e.ename 
+from 
+    emp e 
+where 
+    e.job = 
+    (select 
+         e.job 
+     from 
+         emp e 
+     where 
+         e.ename = 'scott'
+    ) and e.ename <> 'scott';
 ```
 
 3.列出与"SCOTT" 从事相同工作的所有员工及部门名称
 
 ```sql
-select e.ename, (select d.dname from (select e1.deptno from emp e1 where e.ename = e1.ename) e2, dept d where e2.deptno = d.deptno) as dname from emp e where e.job = (select e.job from emp e where e.ename = 'scott') and e.ename <> 'scott';
+select 
+    e.ename, 
+    (select 
+         d.dname 
+     from 
+         (select 
+              e1.deptno 
+          from 
+              emp e1 
+          where 
+              e.ename = e1.ename
+         ) e2, dept d 
+     where 
+         e2.deptno = d.deptno
+    ) as dname 
+from 
+    emp e 
+where 
+    e.job = 
+    (select 
+         e.job 
+     from 
+         emp e 
+     where 
+         e.ename = 'scott'
+    ) and e.ename <> 'scott';
 ```
 
 ***key：select与where子句中的子查询***
@@ -554,7 +1089,19 @@ select e.sal from emp e where e.deptno = 30;
 2.列出薪金等于部门 30 中员工的薪金的其他员工的姓名和薪金
 
 ```sql
-select e.ename, e.sal from emp e, (select e.ename, e.sal from emp e where e.deptno = 30) e1 where e.sal = e1.sal and e.ename <> e1.ename;
+select 
+    e.ename, e.sal 
+from 
+    emp e, 
+    (select 
+         e.ename, e.sal 
+     from 
+         emp e 
+     where 
+         e.deptno = 30
+    ) e1 
+where 
+    e.sal = e1.sal and e.ename <> e1.ename;
 ```
 
 #### 反思
@@ -574,13 +1121,44 @@ select max(e.sal) as max_sal from emp e where e.deptno = 30;
 2.列出薪金高于在部门 30 工作的所有员工的薪金的员工姓名和薪金
 
 ```sql
-select e.ename, e.sal from emp e where e.sal > (select max(e.sal) as max_sal from emp e where e.deptno = 30);
+select 
+    e.ename, e.sal 
+from 
+    emp e 
+where 
+    e.sal > 
+    (select
+         max(e.sal) as max_sal 
+     from 
+         emp e 
+     where 
+         e.deptno = 30
+    );
 ```
 
 3.列出薪金高于在部门 30 工作的所有员工的薪金的员工姓名和薪金、部门名称
 
-```
-select e.ename, e.sal, (select d.dname from dept d where e.deptno = d.deptno) as dname from emp e where e.sal > (select max(e.sal) as max_sal from emp e where e.deptno = 30);
+```sql
+select 
+    e.ename, e.sal, 
+    (select 
+         d.dname 
+     from 
+         dept d 
+     where 
+         e.deptno = d.deptno
+    ) as dname 
+from 
+    emp e 
+where 
+    e.sal > 
+    (select 
+         max(e.sal) as max_sal 
+     from 
+         emp e 
+     where 
+         e.deptno = 30
+    );
 ```
 
 ***key：select与where子句中的子查询***
@@ -602,13 +1180,29 @@ select count(e.deptno) as num from emp e group by e.deptno;
 2.列出在每个部门工作的员工数量, 平均工资
 
 ```sql
-select count(e.deptno) as num, avg(e.sal) as avg_sal from emp e group by e.deptno;
+select 
+    count(e.deptno) as num, avg(e.sal) as avg_sal 
+from 
+    emp e 
+group by 
+    e.deptno;
 ```
 
 3.列出在每个部门工作的员工数量, 平均工资和平均服务期限
 
 ```sql
-select count(e.deptno) as num, avg(e.sal) as avg_sal, floor(avg(unix_timestamp(curdate()) - unix_timestamp(e.hiredate)) / 31536000) as avg_worktime from emp e group by e.deptno;
+select 
+    count(e.deptno) as num, avg(e.sal) as avg_sal, 
+    floor
+        (avg
+            (unix_timestamp(curdate()) - unix_timestamp(e.hiredate))
+         / 
+             31536000
+        ) as avg_worktime 
+from 
+    emp e 
+group by 
+    e.deptno;
 ```
 
 ***key：分组函数可以组合使用***
@@ -636,7 +1230,14 @@ select e.ename, e.sal, d.dname from emp e, dept d where e.deptno = d.deptno;
 #### 思路
 
 ```sql
-select d.deptno, d.dname, d.loc, count(e.deptno) as num from dept d,emp e where d.deptno = e.deptno group by e.deptno;
+select 
+    d.deptno, d.dname, d.loc, count(e.deptno) as num 
+from 
+    dept d,emp e 
+where 
+    d.deptno = e.deptno 
+group by 
+    e.deptno;
 ```
 
 #### 反思
@@ -656,7 +1257,19 @@ select min(e.sal) as min_sal from emp e group by e.job;
 2.列出各种工作的最低工资及从事此工作的雇员姓名
 
 ```sql
-select e.job, e.ename, e1.min_sal from emp e, (select min(e.sal) as min_sal from emp e group by e.job) e1 where e.sal = e1.min_sal;
+select 
+    e.job, e.ename, e1.min_sal 
+from 
+    emp e, 
+    (select 
+         min(e.sal) as min_sal 
+     from 
+         emp e 
+     group by 
+         e.job
+    ) e1 
+where 
+    e.sal = e1.min_sal;
 ```
 
 #### 反思
@@ -676,7 +1289,18 @@ select e1.ename, e1.sal from emp e1, emp e2 where e1.empno = e2.mgr;
 2.列出各个部门的 MANAGER( 领导) 的最低薪金
 
 ```sql
-select min(e.sal) as min_sal, e.deptno from (select e1.ename, e1.sal, e1.deptno from emp e1, emp e2 where e1.empno = e2.mgr) e group by e.deptno;
+select 
+    min(e.sal) as min_sal, e.deptno 
+from 
+    (select 
+         e1.ename, e1.sal, e1.deptno 
+     from 
+         emp e1, emp e2 
+     where 
+         e1.empno = e2.mgr
+    ) e 
+group by 
+    e.deptno;
 ```
 
 #### 反思
@@ -721,8 +1345,24 @@ select d.dname from dept d where d.dname like 's%';
 
 2.求出部门名称中, 带'S'字符的部门员工的工资合计、部门人数
 
-```
-select e.dname, sum(e.sal) as sum_sal, count(e.ename) as num from (select d.dname, e.ename, e.sal from emp e, (select d.deptno, d.dname from dept d where d.dname like 's%') d where e.deptno = d.deptno) e;
+```sql
+select 
+    e.dname, sum(e.sal) as sum_sal, count(e.ename) as num 
+from 
+    (select 
+         d.dname, e.ename, e.sal 
+     from 
+         emp e, 
+         (select 
+              d.deptno, d.dname 
+          from 
+              dept d 
+          where 
+              d.dname like 's%'
+         ) d 
+    where 
+        e.deptno = d.deptno
+    ) e;
 ```
 
 #### 反思
@@ -742,7 +1382,21 @@ select e.ename, floor((unix_timestamp(curdate()) - unix_timestamp(e.hiredate)) /
 2.给任职日期超过 30 年的员工加薪 10%
 
 ```sql
-select e.ename , e.sal * 1.1 as rai_sal, e1.worktime from emp e, (select e.ename, floor((unix_timestamp(curdate()) - unix_timestamp(e.hiredate)) / 31536000) as worktime from emp e) e1 where e.ename = e1.ename and e1.worktime > 30;
+select 
+    e.ename , e.sal * 1.1 as rai_sal, e1.worktime 
+from 
+    emp e, 
+    (select 
+         e.ename, 
+         floor
+             ((unix_timestamp(curdate()) - unix_timestamp(e.hiredate)) 
+              / 31536000
+             ) as worktime 
+     from 
+         emp e
+    ) e1 
+where 
+    e.ename = e1.ename and e1.worktime > 30;
 ```
 
 #### 反思
